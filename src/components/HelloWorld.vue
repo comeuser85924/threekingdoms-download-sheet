@@ -156,8 +156,12 @@ export default {
         const filterVal = ['country','name'];
         // 上面的index、nickName、name是tableData里对象的属性
         // const list = this.tableData;  //把data里的tableData存到list
-        // const list = this.datas.sort((a,b)=> b.quality - a.quality)
-        const data = this.formatJson(filterVal, this.generalsExcelData);
+        const list = this.generalsExcelData.sort((a,b)=> {
+          if(b.country < a.country){
+            return -1;
+          }
+        })
+        const data = this.formatJson(filterVal, list);
         export_json_to_excel(tHeader, data, '三國志戰略版 武將');
       })
     },
@@ -167,7 +171,12 @@ export default {
         const { export_json_to_excel } = require('../excel/Export2Excel');
         const tHeader = ['品質', '陣法'];
         const filterVal = ['quality','name'];
-        const data = this.formatJson(filterVal, this.skillsExcelData);
+        const list = this.skillsExcelData.sort((a,b)=> {
+          if(b.quality < a.quality){
+            return -1;
+          }
+        })
+        const data = this.formatJson(filterVal, list);
         export_json_to_excel(tHeader, data, '三國志戰略版 戰法');
       })
     },
