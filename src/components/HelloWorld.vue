@@ -123,23 +123,19 @@ export default {
 
     }
   },
-  beforeMount() {
+  async beforeMount() {
     let generalsUrl = ""
     let skillsUrl = ""
-    axios.get("https://lai-api-server.herokuapp.com/threekingdoms/generals")
+    await axios.get("https://lai-api-server.herokuapp.com/threekingdoms/generals")
       .then(res => {
-        for (const item of res.data.values.filter((item)=> item[0] !== 'country' && item[0] !== 'break')) {
-          this.generalsList.push({'country':item[0],'name':item[1],'quality':item[2],'cost':item[3]})
-        }        
+        this.generalsList = res.data.data
       })
       .catch(error => {
         console.log(error)
       })
-    axios.get("https://lai-api-server.herokuapp.com/threekingdoms/skills")
+    await axios.get("https://lai-api-server.herokuapp.com/threekingdoms/skills")
       .then(res => {
-        for (const item of res.data.values.filter((item)=>item[0] !== 'quality')) {
-             this.skillsList.push({'quality':item[0],'name':item[1]})
-          }
+        this.skillsList = res.data.data
       })
       .catch(error => {
         console.log(error)
