@@ -136,10 +136,19 @@ export default {
 }
 
 @media screen and (max-width: 768px){
-    .modal-container {
-        overflow:inherit;
-        width:85%;
-        padding: 10px 5px;
-    }
+
+  .modal-container {
+      overflow:inherit;
+      width:85%;
+      padding: 10px 5px;
+  }
+}
+@media screen and (max-width: 320px){
+  .modal-header{
+    padding: 0 1rem !important;
+  }
+  .modal-body{
+    margin:0!important;
+  }
 }
 </style>

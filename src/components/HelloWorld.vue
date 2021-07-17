@@ -1,20 +1,31 @@
 <template>
-  <div>
+  <div style="max-width: 1280px;" class="mx-auto">
     <div class="my-2">
-      <div class="mx-auto w-75 mb-4">
+      <div class="mx-auto mb-4">
         <div class=" d-flex flex-wrap">
           <h2 class="w-100 m-2 title">武將區</h2>
-          <button class="btn btn-primary text-white m-2 w-20" v-for="item of generalsCheckedTextList" :key="item.id" @click='skillsChecked(item)' >{{item.name}}</button>
-          <button class="btn btn-outline-success m-2 w-10"  @click="generalExportExcel">匯出表格</button>
+          <button class="btn btn-primary text-white m-1 w-20" v-for="item of generalsCheckedTextList" :key="item.id" @click='skillsChecked(item)' >{{item.name}}</button>
+          <button class="btn btn-outline-success m-1 w-10"  @click="generalExportExcel">匯出表格</button>
         </div>
       </div>
-      <ul class="nav nav-tabs mx-auto w-75">
-        <li class="nav-item" v-for="(item) in generalsTabList" :key="item.key">
-          <a class="nav-link" style="cursor: pointer;" :class="{'active': item.tab  === generalsTab}" @click="handleGeneralsTab(item.tab)">{{item.tab}}</a>
-        </li>
+      <ul class="nav nav-tabs mx-auto d-flex justify-content-between">
+        <div>
+          <li class="nav-item" v-for="(item) in generalsTabList" :key="item.key">
+            <a class="nav-link" style="cursor: pointer;" :class="{'active': item.tab  === generalsTab}" @click="handleGeneralsTab(item.tab)">{{item.tab}}</a>
+          </li>
+        </div>
+        <div class="d-flex  w-20 my-2 align-items-center">
+          <span class="w-40">品質篩選:</span>
+          <select class="w-60 form-select form-select-sm mx-2"  @change="filterQuality($event)" v-model="generalsFilterText">
+            <!--有value傳value，沒有value就傳包含的文字-->
+            <option selected value="全部">全部</option>
+            <option value="4"> 4星武將 </option>
+            <option value="5"> 5星武將 </option>
+          </select>
+        </div>
       </ul>
       <div class="checkbox-form mx-auto mt-4">
-        <div class="answers d-flex flex-wrap m-auto">
+        <div class="answers m-auto">
           <div v-for="(item,i) of generalsList" :key="i">
             <label v-if="item.country === generalsTab" class="item" >
               <span :for="item">{{ item.name }}</span>
@@ -38,22 +49,21 @@
         </div>
       </div>
     </div>
-    <hr>
     <div class="my-2">
-      <div class="mx-auto w-75 mb-4">
+      <div class="mx-auto mb-4">
         <div class=" d-flex flex-wrap">
           <h2 class="w-100 m-2 title">戰法區</h2>
           <button class="btn btn-primary text-white m-2 w-20"  v-for="item of skillsCheckedTextList" :key="item.id" @click='skillsChecked(item)' >{{item.name}}</button>
           <button class="btn btn-outline-success m-2 w-10"  @click="skillsExportExcel">匯出表格</button>
         </div>
       </div>
-      <ul class="nav nav-tabs  mx-auto w-75">
+      <ul class="nav nav-tabs mx-auto">
         <li class="nav-item" v-for="(item) in skillsTabList" :key="item.key">
           <a class="nav-link" style="cursor: pointer;" :class="{'active': item.tab  === skillsCurrentTab}" @click="handleSkillsTab(item.tab)">{{item.tab}}</a>
         </li>
       </ul>
       <div class="checkbox-form mx-auto mt-4">
-        <div class="answers d-flex flex-wrap m-auto">
+        <div class="answers m-auto ">
           <div v-for="(item,i) of skillsList" :key="i">
             <label v-if="item.quality === skillsCurrentTab" class="item">
               <span :for="item">{{ item.name }}</span>
@@ -74,7 +84,6 @@
               <span class="checkmark" />
             </label>
           </div>
-          
         </div>
       </div>
     </div>
@@ -91,6 +100,10 @@ export default {
   },
   data(){
     return{
+      allData:[],
+
+      generalsFilterText:'全部',
+      generalsFilterList:[],
       generalsList:[],
       generalsExcelData:[],
       generalsTab:'所有武將',
@@ -124,11 +137,10 @@ export default {
     }
   },
   async beforeMount() {
-    let generalsUrl = ""
-    let skillsUrl = ""
     await axios.get("https://lai-api-server.herokuapp.com/threekingdoms/generals")
       .then(res => {
         this.generalsList = res.data.data
+        this.allData = res.data.data
       })
       .catch(error => {
         console.log(error)
@@ -142,14 +154,19 @@ export default {
       })
   },
   methods: {
+    filterQuality(event){
+      this.generalsList = this.allData.filter((item)=>{
+        return (event.target.value !== '全部') ? item.quality === event.target.value: this.allData
+      })
+    },
     generalExportExcel() {
       if(this.generalsExcelData.length === 0) return alert('請選擇武將');
       require.ensure([], () => {
         const { export_json_to_excel } = require('../excel/Export2Excel');
-        const tHeader = ['陣營', '姓名'];
+        const tHeader = ['陣營', '品質', '姓名'];
         // const tHeader = ['魏', '蜀', '吳'];
         // 上面设置Excel的表格第一行的标题
-        const filterVal = ['country','name'];
+        const filterVal = ['country','quality', 'name'];
         // 上面的index、nickName、name是tableData里对象的属性
         // const list = this.tableData;  //把data里的tableData存到list
         const list = this.generalsExcelData.sort((a,b)=> {
@@ -177,7 +194,14 @@ export default {
       })
     },
     formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => v[j]))
+      return jsonData.map(v => filterVal.map(j => {
+        if(j === 'quality' && v[j] === '4'  ){
+          return '紫'
+        }else if(j === 'quality' && v[j] === '5'  ){
+          return '橙'
+        }
+        return v[j]
+      }))
     },
     skillsChecked(skillsItem){
       switch (skillsItem.id) {
@@ -277,9 +301,9 @@ a {
 }
 
 .checkbox-form .answers {
-	display: flex;
+  display: flex;
+  flex-wrap: wrap;
 	align-items: left;
-  width: 75%;
 }
 
 .checkbox-form label {
@@ -348,5 +372,8 @@ a {
 
 @media screen and (max-width: 768px){
   .title{ text-align: center; }
+  .checkbox-form .answers {
+    justify-content: center;
+  }
 }
 </style>

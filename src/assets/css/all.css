@@ -23,6 +23,8 @@ body {
 .w-90{ width:90%!important; }
 
 @media screen and (max-width: 768px){
+  .f22{ font-size: 18px; }
+
     .w-10, .w-20, .w-30, .w-40, .w-50, .w-60, .w-70, .w-80, .w-90 
     { width:100%!important; }
 }

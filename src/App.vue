@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="w-100">
     <img class="banner" src="https://cdn-os.sialiagames.com.tw/s3g-tw-gw/1.0.0/prod/views/static/kv.e8ad92ee.jpg"/>
     <HelloWorld/>
     <popup/>
