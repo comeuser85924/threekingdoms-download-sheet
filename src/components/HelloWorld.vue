@@ -5,7 +5,8 @@
         <div class=" d-flex flex-wrap">
           <h2 class="w-100 m-2 title">武將區</h2>
           <button class="btn btn-primary text-white m-1 w-20" v-for="item of generalsCheckedTextList" :key="item.id" @click='skillsChecked(item)' >{{item.name}}</button>
-          <button class="btn btn-outline-success m-1 w-10"  @click="generalExportExcel">匯出表格</button>
+          <button v-show="!detectmob()" class="btn btn-outline-success m-1 w-10"  @click="generalExportExcel">匯出表格</button>
+          <button v-show="detectmob()" class="btn btn-outline-success m-1 w-10"  @click="generalMobileTxt('generals')">匯出表格</button>
         </div>
       </div>
       <ul class="nav nav-tabs mx-auto d-flex justify-content-between">
@@ -54,7 +55,9 @@
         <div class=" d-flex flex-wrap">
           <h2 class="w-100 m-2 title">戰法區</h2>
           <button class="btn btn-primary text-white m-2 w-20"  v-for="item of skillsCheckedTextList" :key="item.id" @click='skillsChecked(item)' >{{item.name}}</button>
-          <button class="btn btn-outline-success m-2 w-10"  @click="skillsExportExcel">匯出表格</button>
+          <button v-show="!detectmob()" class="btn btn-outline-success m-2 w-10"  @click="skillsExportExcel">匯出表格</button>
+          <button v-show="detectmob()" class="btn btn-outline-success m-1 w-10"  @click="generalMobileTxt('skills')">匯出表格</button>
+
         </div>
       </div>
       <ul class="nav nav-tabs mx-auto">
@@ -65,8 +68,8 @@
       <div class="checkbox-form mx-auto mt-4">
         <div class="answers m-auto ">
           <div v-for="(item,i) of skillsList" :key="i">
-            <label v-if="item.quality === skillsCurrentTab" class="item">
-              <span :for="item">{{ item.name }}</span>
+            <label v-if="item.inheritedSkill.quality === skillsCurrentTab" class="item">
+              <span :for="item">{{ item.inheritedSkill.name }}</span>
               <input
                 v-model="skillsExcelData"
                 type="checkbox"
@@ -75,7 +78,7 @@
               <span class="checkmark" />
             </label>
             <label v-if="skillsCurrentTab === '所有戰法'" class="item">
-              <span :for="item">{{ item.name }}</span>
+              <span :for="item">{{ item.inheritedSkill.name }}</span>
               <input
                 v-model="skillsExcelData"
                 type="checkbox"
@@ -139,25 +142,83 @@ export default {
   async beforeMount() {
     await axios.get("https://lai-api-server.herokuapp.com/threekingdoms/generals")
       .then(res => {
-        this.generalsList = res.data.data
-        this.allData = res.data.data
+        this.generalsList = res.data.data.filter((item)=>{ return item.name !== '事件戰法' })
+        this.allData = res.data.data.filter((item)=>{ return item.name !== '事件戰法'})
       })
       .catch(error => {
         console.log(error)
       })
-    await axios.get("https://lai-api-server.herokuapp.com/threekingdoms/skills")
+    await axios.get("https://lai-api-server.herokuapp.com/threekingdoms/generals")
       .then(res => {
-        this.skillsList = res.data.data
+        this.skillsList = res.data.data.sort((a,b)=> {
+      if(b.inheritedSkill.quality < a.inheritedSkill.quality){
+        return -1;
+      }
+    })
       })
       .catch(error => {
         console.log(error)
       })
   },
   methods: {
+    detectmob() {
+          if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+           if( navigator.userAgent.match(/Android/i)
+           || navigator.userAgent.match(/webOS/i)
+           || navigator.userAgent.match(/iPhone/i)
+           || navigator.userAgent.match(/iPad/i)
+           || navigator.userAgent.match(/iPod/i)
+           || navigator.userAgent.match(/BlackBerry/i)
+           || navigator.userAgent.match(/Windows Phone/i)
+           ){
+               return true;
+             }
+           else {
+             return false;
+           }
+         }
+    },
     filterQuality(event){
       this.generalsList = this.allData.filter((item)=>{
         return (event.target.value !== '全部') ? item.quality === event.target.value: this.allData
       })
+    },
+    generalMobileTxt(type){
+      if(type ==='generals'){
+        if(this.generalsExcelData.length === 0) return alert('請選擇武將');
+        if(confirm('警告：建議您使用電腦操作，因為手機版與電腦版匯出的檔案類型不同，仍要下載嗎？')){
+          const filterVal = ['country', 'name'];
+          const list = this.generalsExcelData.sort((a,b)=> {
+            if(b.country < a.country){
+              return -1;
+            }
+          })
+          const data = this.formatJson('generals', filterVal, list);
+          let aTag = document.createElement('a')
+          let blob = new Blob([data])
+          aTag.download = '三國志戰略版 武將.txt'
+          aTag.href = URL.createObjectURL(blob)
+          aTag.click();
+          URL.revokeObjectURL(blob)
+        }
+      }else{
+        if(this.skillsExcelData.length === 0) return alert('請選擇戰法');
+        if(confirm('警告：建議您使用電腦操作，因為手機版與電腦版匯出的檔案類型不同，仍要下載嗎？')){
+          const filterVal = ['quality','name'];
+          const list = this.skillsExcelData.sort((a,b)=> {
+            if(b.inheritedSkill.quality < a.inheritedSkill.quality){
+              return -1;
+            }
+          })
+          const data = this.formatJson('skills' ,filterVal, list);
+          let aTag = document.createElement('a')
+          let blob = new Blob([data])
+          aTag.download = '三國志戰略版 戰法.txt'
+          aTag.href = URL.createObjectURL(blob)
+          aTag.click();
+          URL.revokeObjectURL(blob)
+        }
+      }
     },
     generalExportExcel() {
       if(this.generalsExcelData.length === 0) return alert('請選擇武將');
@@ -174,7 +235,7 @@ export default {
             return -1;
           }
         })
-        const data = this.formatJson(filterVal, list);
+        const data = this.formatJson('generals', filterVal, list);
         export_json_to_excel(tHeader, data, '三國志戰略版 武將');
       })
     },
@@ -182,26 +243,33 @@ export default {
       if(this.skillsExcelData.length === 0) return alert('請選擇戰法');
       require.ensure([], () => {
         const { export_json_to_excel } = require('../excel/Export2Excel');
-        const tHeader = ['品質', '陣法'];
+        const tHeader = ['品質', '戰法'];
         const filterVal = ['quality','name'];
         const list = this.skillsExcelData.sort((a,b)=> {
-          if(b.quality < a.quality){
+          if(b.inheritedSkill.quality < a.inheritedSkill.quality){
             return -1;
           }
         })
-        const data = this.formatJson(filterVal, list);
+        const data = this.formatJson('skills', filterVal, list);
         export_json_to_excel(tHeader, data, '三國志戰略版 戰法');
       })
     },
-    formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => {
-        if(j === 'quality' && v[j] === '4'  ){
-          return '紫'
-        }else if(j === 'quality' && v[j] === '5'  ){
-          return '橙'
-        }
-        return v[j]
-      }))
+    formatJson(type, filterVal, jsonData) {
+      if(type === 'generals'){
+          return jsonData.map(v => filterVal.map(j => {
+          if(j === 'quality' && v[j] === '4'  ){
+            return '紫'
+          }else if(j === 'quality' && v[j] === '5'  ){
+            return '橙'
+          }
+          return v[j]
+        }))
+      }
+      if(type === 'skills'){
+        return jsonData.map(v => filterVal.map(j => {
+          return v.inheritedSkill[j]
+        }))
+      }
     },
     skillsChecked(skillsItem){
       switch (skillsItem.id) {
@@ -246,7 +314,7 @@ export default {
           });
         }else{
           this[excelData].forEach((skill) => { 
-            if(skill.quality === skillsItem.id) catchList.push(skill)
+            if(skill.inheritedSkill.quality === skillsItem.id) catchList.push(skill)
           });
         }
         this[excelData] = this[excelData].filter((e)=>{ return catchList.indexOf(e) === -1 })
@@ -260,11 +328,11 @@ export default {
         let catchList = []
         if( allDataList === 'generalsList' ){
           catchList = this[allDataList].filter((general)=>{
-            if( general.country === skillsItem.id ) return general
+            if(general.country === skillsItem.id ) return general
           })
         }else{
           catchList = this[allDataList].filter((skill)=>{
-            if( skill.quality === skillsItem.id ) return skill
+            if( skill.inheritedSkill.quality === skillsItem.id ) return skill
           })
         }
         catchList.forEach((item) => { this[excelData].push(item); });
