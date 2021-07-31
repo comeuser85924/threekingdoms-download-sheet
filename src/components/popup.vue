@@ -38,11 +38,12 @@ export default {
                 instructions:{
                     title:'使用說明',
                     content:
-                    "此網站的擁有【快速產表格功能】<br>"+
+                    "【快速產表格功能】<br>"+
                     "幫助您減少打字、選字、找資料的時間<br>"+
-                    "只要透過鼠標勾選，就能快速將武將及戰法下載表格至您的裝置(電腦/手機)中！趕快來使用吧！<br><br>"+
+                    "只要透過勾選，就能快速將武將及戰法下載表格至您的裝置(電腦/手機)中！趕快來使用吧！<br><br>"+
                     "<span class='text-danger font-weight-bold f22'>備註 : 若要精美的排版請再請自行調整</span><br>"+
-                    "<span class='text-danger font-weight-bold f14'>2021/07/24 更新 : 支援手機版下載、修正傳承戰法、新增事件戰法、4星及5星品質篩選</span>"
+                    "<span class='text-danger font-weight-bold f14'>2021/07/24 更新 : 支援手機版下載、修正傳承戰法、新增事件戰法、4星及5星品質篩選</span><br>"+
+                    "<span class='text-danger font-weight-bold f14'>2021/07/31 更新 : 修正戰法重複 Bug</span>"
                 },
                 note:{
                     title:'注意事項',

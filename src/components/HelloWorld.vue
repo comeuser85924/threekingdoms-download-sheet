@@ -151,11 +151,18 @@ export default {
     await axios.get("https://lai-api-server.herokuapp.com/threekingdoms/generals")
       .then(res => {
         this.skillsList = res.data.data.sort((a,b)=> {
-      if(b.inheritedSkill.quality < a.inheritedSkill.quality){
-        return -1;
-      }
-    })
-      })
+          if(b.inheritedSkill.quality < a.inheritedSkill.quality){
+            return -1;
+          }
+        }).reduce((acc, current) => {
+          const x = acc.find(item => item.inheritedSkill.name === current.inheritedSkill.name);
+          if (!x) {
+            return acc.concat([current]);
+          } else {
+            return acc;
+          }
+        }, []);
+     })
       .catch(error => {
         console.log(error)
       })
