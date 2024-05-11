@@ -129,7 +129,7 @@ export default {
       skillsCurrentTab: '所有戰法',
       skillsTabList:[
         {tab: '所有戰法'},
-        {tab: 'S'}, 
+        {tab: 'S'},
         {tab: 'A'}
       ],
       skillsCheckedTextList:[
@@ -140,17 +140,12 @@ export default {
     }
   },
   async beforeMount() {
-    await axios.get("https://lai-api-server.herokuapp.com/threekingdoms/generals")
+    await axios.get("https://garylai-test.com/api/threekingdoms/generalsData")
       .then(res => {
-        this.generalsList = res.data.data.filter((item)=>{ return item.name !== '事件戰法' })
-        this.allData = res.data.data.filter((item)=>{ return item.name !== '事件戰法'})
-      })
-      .catch(error => {
-        console.log(error)
-      })
-    await axios.get("https://lai-api-server.herokuapp.com/threekingdoms/generals")
-      .then(res => {
-        this.skillsList = res.data.data.sort((a,b)=> {
+        this.generalsList = res.data.filter((item)=>{ return item.name !== '事件戰法' })
+        this.allData = res.data.filter((item)=>{ return item.name !== '事件戰法'})
+        console.log(this.generalsList)
+        this.skillsList = res.data.sort((a,b)=> {
           if(b.inheritedSkill.quality < a.inheritedSkill.quality){
             return -1;
           }
@@ -162,6 +157,7 @@ export default {
             return acc;
           }
         }, []);
+        console.log(this.skillsList)
      })
       .catch(error => {
         console.log(error)
@@ -308,7 +304,7 @@ export default {
     },
     checkedAll(skillsItem, checkedTextList, excelData, allDataList, selectList){
       if(skillsItem.status){
-        this[checkedTextList].map((item)=>{ 
+        this[checkedTextList].map((item)=>{
           if(item.id == skillsItem.id) {
             item.name = selectList[0].selectAll
             item.status = false
@@ -316,17 +312,17 @@ export default {
         })
         let catchList = []
         if( allDataList === 'generalsList' ){
-          this[excelData].forEach((general) => { 
+          this[excelData].forEach((general) => {
             if(general.country === skillsItem.id) catchList.push(general)
           });
         }else{
-          this[excelData].forEach((skill) => { 
+          this[excelData].forEach((skill) => {
             if(skill.inheritedSkill.quality === skillsItem.id) catchList.push(skill)
           });
         }
         this[excelData] = this[excelData].filter((e)=>{ return catchList.indexOf(e) === -1 })
       }else{
-        this[checkedTextList].map((item)=>{ 
+        this[checkedTextList].map((item)=>{
           if(item.id == skillsItem.id) {
             item.name = selectList[1].selectCancel
             item.status = true
