@@ -33,7 +33,7 @@
     "vue-cli-plugin-bootstrap-vue": "~0.7.0"
   },
   "engines": {
-    "node": "18.17.0",
+    "node": "16.20.2",
     "npm": ">= 3.0.0"
   },
   "browserslist": [
