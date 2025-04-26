@@ -140,7 +140,7 @@ export default {
     }
   },
   async beforeMount() {
-    await axios.get("https://garylai-test.com/api/threekingdoms/generalsData")
+    await axios.get("https://garylai-project.site/api/threekingdoms/generalsData")
       .then(res => {
         this.generalsList = res.data.filter((item)=>{ return item.name !== '事件戰法' })
         this.allData = res.data.filter((item)=>{ return item.name !== '事件戰法'})
